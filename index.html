@@ -5,18 +5,122 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title id="pageTitle">Ing. Študijná Skupina – Prístup</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f0f2f5; margin: 0; }
-    .card { background: white; padding: 28px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); width: 100%; max-width: 420px; box-sizing: border-box; position: relative; }
-    .lang-switcher { position: absolute; top: 20px; right: 24px; background: #e4e6eb; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; color: #333; }
-    .lang-switcher:hover { background: #d8dadf; }
-    h2 { margin-top: 0; color: #111; font-size: 22px; }
-    p { color: #666; font-size: 14px; line-height: 1.4; margin-bottom: 20px; }
-    input, button { width: 100%; padding: 12px; margin-top: 12px; border-radius: 6px; border: 1px solid #ccd0d5; box-sizing: border-box; font-size: 14px; }
-    input:focus { outline: none; border-color: #075e54; box-shadow: 0 0 0 2px rgba(7,94,84,0.1); }
-    button { background: #075e54; color: white; font-weight: bold; border: none; cursor: pointer; transition: background 0.2s; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      min-height: 100vh; 
+      background: #f0f2f5; 
+      margin: 0; 
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .card { 
+      background: white; 
+      padding: 32px 28px 28px; 
+      border-radius: 16px; 
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+      width: 100%; 
+      max-width: 420px; 
+      box-sizing: border-box; 
+      position: relative; 
+      text-align: center;
+    }
+
+    /* --- Language Toggle Switch (Slider) --- */
+    .lang-container {
+      position: absolute;
+      top: 18px;
+      right: 20px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: bold;
+      color: #666;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 22px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #075e54;
+      transition: .3s;
+      border-radius: 22px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #25D366;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(22px);
+    }
+
+    /* --- Form Elements --- */
+    h2 { margin-top: 10px; color: #111; font-size: 22px; }
+    p { color: #666; font-size: 14px; line-height: 1.4; margin-bottom: 24px; }
+    
+    input[type="text"], button { 
+      width: 100%; 
+      padding: 12px 14px; 
+      margin-top: 12px; 
+      border-radius: 8px; 
+      border: 1px solid #ccd0d5; 
+      box-sizing: border-box; 
+      font-size: 14px; 
+      text-align: left;
+    }
+
+    input[type="text"]:focus { 
+      outline: none; 
+      border-color: #075e54; 
+      box-shadow: 0 0 0 3px rgba(7,94,84,0.12); 
+    }
+
+    button { 
+      background: #075e54; 
+      color: white; 
+      font-weight: bold; 
+      border: none; 
+      cursor: pointer; 
+      margin-top: 18px;
+      text-align: center;
+      transition: background 0.2s, transform 0.1s; 
+    }
+
     button:hover { background: #054c44; }
+    button:active { transform: scale(0.99); }
     button:disabled { background: #999; cursor: not-allowed; }
-    .msg { margin-top: 15px; padding: 12px; border-radius: 6px; display: none; font-size: 14px; line-height: 1.4; }
+
+    .msg { margin-top: 18px; padding: 12px; border-radius: 8px; display: none; font-size: 14px; line-height: 1.4; text-align: left; }
     .error { background: #ffe6e6; color: #cc0000; border: 1px solid #ffcccc; }
     .success { background: #e6f4ea; color: #137333; border: 1px solid #ceead6; }
     .success a { color: #075e54; font-weight: bold; word-break: break-all; }
@@ -25,13 +129,21 @@
 <body>
 
 <div class="card">
-  <button class="lang-switcher" id="langBtn" onclick="toggleLanguage()">EN / SK</button>
+  <!-- Language Toggle Slider -->
+  <div class="lang-container">
+    <span>SK</span>
+    <label class="switch">
+      <input type="checkbox" id="langToggle" onchange="toggleLanguage()">
+      <span class="slider"></span>
+    </label>
+    <span>EN</span>
+  </div>
   
   <h2 id="heading">Žiadosť o vstup do Ing. skupiny</h2>
   <p id="subheading">Zadajte svoje meno, priezvisko a telefónne číslo pre overenie a získanie odkazu.</p>
   
-  <input type="text" id="firstName" placeholder="Krstné meno (napr. Martin)">
-  <input type="text" id="lastName" placeholder="Priezvisko (napr. Baňacký)">
+  <input type="text" id="firstName" placeholder="Krstné meno (napr. Ján)">
+  <input type="text" id="lastName" placeholder="Priezvisko (napr. Novák)">
   <input type="text" id="phone" placeholder="WhatsApp telefón (+421...)">
   <button id="submitBtn" onclick="requestLink()">Získať odkaz na skupinu</button>
 
@@ -78,7 +190,8 @@
   };
 
   function toggleLanguage() {
-    currentLang = currentLang === 'sk' ? 'en' : 'sk';
+    const isChecked = document.getElementById('langToggle').checked;
+    currentLang = isChecked ? 'en' : 'sk';
     updateTexts();
   }
 
@@ -93,8 +206,6 @@
     
     const btn = document.getElementById('submitBtn');
     if (!btn.disabled) btn.innerText = t.btnText;
-    
-    document.getElementById('langBtn').innerText = currentLang === 'sk' ? 'English 🇬🇧' : 'Slovensky 🇸🇰';
   }
 
   async function requestLink() {
@@ -142,7 +253,7 @@
     }
   }
 
-  // Initialize default language texts
+  // Initialize
   updateTexts();
 </script>
 
