@@ -1,74 +1,149 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sk">
 <head>
   <meta charset="UTF-8">
-  <title>Ing. Group Access Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="pageTitle">Ing. Študijná Skupina – Prístup</title>
   <style>
-    body { font-family: sans-serif; display: flex; justify-content: center; padding-top: 50px; background: #f0f2f5; }
-    .card { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-    input, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; }
-    button { background: #075e54; color: white; font-weight: bold; border: none; cursor: pointer; }
-    button:disabled { background: #999; }
-    .msg { margin-top: 15px; padding: 10px; border-radius: 6px; display: none; }
-    .error { background: #ffe6e6; color: #cc0000; }
-    .success { background: #e6f4ea; color: #137333; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f0f2f5; margin: 0; }
+    .card { background: white; padding: 28px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); width: 100%; max-width: 420px; box-sizing: border-box; position: relative; }
+    .lang-switcher { position: absolute; top: 20px; right: 24px; background: #e4e6eb; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; color: #333; }
+    .lang-switcher:hover { background: #d8dadf; }
+    h2 { margin-top: 0; color: #111; font-size: 22px; }
+    p { color: #666; font-size: 14px; line-height: 1.4; margin-bottom: 20px; }
+    input, button { width: 100%; padding: 12px; margin-top: 12px; border-radius: 6px; border: 1px solid #ccd0d5; box-sizing: border-box; font-size: 14px; }
+    input:focus { outline: none; border-color: #075e54; box-shadow: 0 0 0 2px rgba(7,94,84,0.1); }
+    button { background: #075e54; color: white; font-weight: bold; border: none; cursor: pointer; transition: background 0.2s; }
+    button:hover { background: #054c44; }
+    button:disabled { background: #999; cursor: not-allowed; }
+    .msg { margin-top: 15px; padding: 12px; border-radius: 6px; display: none; font-size: 14px; line-height: 1.4; }
+    .error { background: #ffe6e6; color: #cc0000; border: 1px solid #ffcccc; }
+    .success { background: #e6f4ea; color: #137333; border: 1px solid #ceead6; }
+    .success a { color: #075e54; font-weight: bold; word-break: break-all; }
   </style>
 </head>
 <body>
 
 <div class="card">
-  <h2>Master's Degree Group Request</h2>
-  <p>Enter your full name and phone number to request access.</p>
+  <button class="lang-switcher" id="langBtn" onclick="toggleLanguage()">EN / SK</button>
   
-  <input type="text" id="fullName" placeholder="Full Name (e.g. Martin Baňacký)">
-  <input type="text" id="phone" placeholder="WhatsApp Phone (+421...)">
-  <button id="submitBtn" onclick="requestLink()">Get Group Link</button>
+  <h2 id="heading">Žiadosť o vstup do Ing. skupiny</h2>
+  <p id="subheading">Zadajte svoje meno, priezvisko a telefónne číslo pre overenie a získanie odkazu.</p>
+  
+  <input type="text" id="firstName" placeholder="Krstné meno (napr. Martin)">
+  <input type="text" id="lastName" placeholder="Priezvisko (napr. Baňacký)">
+  <input type="text" id="phone" placeholder="WhatsApp telefón (+421...)">
+  <button id="submitBtn" onclick="requestLink()">Získať odkaz na skupinu</button>
 
   <div id="statusMsg" class="msg"></div>
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyKmNCNEjMWU0n-xQhNDS_-FY0_dIT6cxvjr6wP_f5Qw3ltV50grutd5RRsYioEo2EJ/exec";
+  // REPLACE WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
+  const SCRIPT_URL = "YOUR_DEPLOYED_APPS_SCRIPT_WEB_APP_URL";
+
+  let currentLang = 'sk';
+
+  const translations = {
+    sk: {
+      title: "Ing. Študijná Skupina – Prístup",
+      heading: "Žiadosť o vstup do Ing. skupiny",
+      subheading: "Zadajte svoje meno, priezvisko a telefónne číslo pre overenie a získanie odkazu.",
+      firstNamePlaceholder: "Krstné meno (napr. Martin)",
+      lastNamePlaceholder: "Priezvisko (napr. Baňacký)",
+      phonePlaceholder: "WhatsApp telefón (+421...)",
+      btnText: "Získať odkaz na skupinu",
+      btnLoading: "Overujem...",
+      fillAll: "Prosím, vyplňte všetky polia.",
+      netError: "Chyba pripojenia. Skúste to znova.",
+      successMsg: (link) => `Úspech! Vaše telefónne číslo je zaevidované.<br><br>
+          <a href="${link}" target="_blank"><b>Kliknite sem pre vstup do WhatsApp skupiny</b></a><br><br>
+          <i>Poznámka: Administrátor schváli vašu žiadosť priamo vo WhatsAppe po overení.</i>`
+    },
+    en: {
+      title: "Master's Study Group – Access",
+      heading: "Master's Group Access Request",
+      subheading: "Enter your first name, last name, and phone number to verify and get your link.",
+      firstNamePlaceholder: "First Name (e.g. Martin)",
+      lastNamePlaceholder: "Last Name (e.g. Baňacký)",
+      phonePlaceholder: "WhatsApp Phone (+421...)",
+      btnText: "Get Group Link",
+      btnLoading: "Verifying...",
+      fillAll: "Please fill in all fields.",
+      netError: "Network error. Please try again.",
+      successMsg: (link) => `Success! Your phone number is registered.<br><br>
+          <a href="${link}" target="_blank"><b>Click here to join WhatsApp Group</b></a><br><br>
+          <i>Note: An admin will approve your request inside WhatsApp once verified.</i>`
+    }
+  };
+
+  function toggleLanguage() {
+    currentLang = currentLang === 'sk' ? 'en' : 'sk';
+    updateTexts();
+  }
+
+  function updateTexts() {
+    const t = translations[currentLang];
+    document.getElementById('pageTitle').innerText = t.title;
+    document.getElementById('heading').innerText = t.heading;
+    document.getElementById('subheading').innerText = t.subheading;
+    document.getElementById('firstName').placeholder = t.firstNamePlaceholder;
+    document.getElementById('lastName').placeholder = t.lastNamePlaceholder;
+    document.getElementById('phone').placeholder = t.phonePlaceholder;
+    
+    const btn = document.getElementById('submitBtn');
+    if (!btn.disabled) btn.innerText = t.btnText;
+    
+    document.getElementById('langBtn').innerText = currentLang === 'sk' ? 'English 🇬🇧' : 'Slovensky 🇸🇰';
+  }
 
   async function requestLink() {
-    const name = document.getElementById('fullName').value.trim();
+    const t = translations[currentLang];
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const fullName = `${firstName} ${lastName}`.trim();
     const phone = document.getElementById('phone').value.trim();
+    
     const msgDiv = document.getElementById('statusMsg');
     const btn = document.getElementById('submitBtn');
 
-    if (!name || !phone) {
-      alert("Please fill in both fields.");
+    if (!firstName || !lastName || !phone) {
+      alert(t.fillAll);
       return;
     }
 
     btn.disabled = true;
+    btn.innerText = t.btnLoading;
     msgDiv.style.display = 'none';
 
     try {
       const res = await fetch(SCRIPT_URL, {
         method: "POST",
-        body: JSON.stringify({ name: name, phone: phone })
+        body: JSON.stringify({ name: fullName, phone: phone })
       });
       const data = await res.json();
 
       msgDiv.style.display = 'block';
       if (data.success) {
         msgDiv.className = "msg success";
-        msgDiv.innerHTML = `Success! Your phone number is registered.<br><br>
-          <a href="${data.link}" target="_blank"><b>Click here to join WhatsApp Group</b></a><br><br>
-          <i>Note: An admin will approve your request inside WhatsApp once verified.</i>`;
+        msgDiv.innerHTML = t.successMsg(data.link);
       } else {
         msgDiv.className = "msg error";
         msgDiv.innerText = data.message;
         btn.disabled = false;
+        btn.innerText = t.btnText;
       }
     } catch (e) {
       msgDiv.style.display = 'block';
       msgDiv.className = "msg error";
-      msgDiv.innerText = "Network error. Please try again.";
+      msgDiv.innerText = t.netError;
       btn.disabled = false;
+      btn.innerText = t.btnText;
     }
   }
+
+  // Initialize default language texts
+  updateTexts();
 </script>
 
 </body>
