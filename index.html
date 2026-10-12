@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ing. Group Access Portal</title>
+  <style>
+    body { font-family: sans-serif; display: flex; justify-content: center; padding-top: 50px; background: #f0f2f5; }
+    .card { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+    input, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; }
+    button { background: #075e54; color: white; font-weight: bold; border: none; cursor: pointer; }
+    button:disabled { background: #999; }
+    .msg { margin-top: 15px; padding: 10px; border-radius: 6px; display: none; }
+    .error { background: #ffe6e6; color: #cc0000; }
+    .success { background: #e6f4ea; color: #137333; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h2>Master's Degree Group Request</h2>
+  <p>Enter your full name and phone number to request access.</p>
+  
+  <input type="text" id="fullName" placeholder="Full Name (e.g. Martin Baňacký)">
+  <input type="text" id="phone" placeholder="WhatsApp Phone (+421...)">
+  <button id="submitBtn" onclick="requestLink()">Get Group Link</button>
+
+  <div id="statusMsg" class="msg"></div>
+</div>
+
+<script>
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyv-He7eyH4YDxufY4OsBk8uih1qs-Dq0bUOtF5FmhAPRnPjX7W9HePKAQxXZI5OG-U/exec";
+
+  async function requestLink() {
+    const name = document.getElementById('fullName').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const msgDiv = document.getElementById('statusMsg');
+    const btn = document.getElementById('submitBtn');
+
+    if (!name || !phone) {
+      alert("Please fill in both fields.");
+      return;
+    }
+
+    btn.disabled = true;
+    msgDiv.style.display = 'none';
+
+    try {
+      const res = await fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ name: name, phone: phone })
+      });
+      const data = await res.json();
+
+      msgDiv.style.display = 'block';
+      if (data.success) {
+        msgDiv.className = "msg success";
+        msgDiv.innerHTML = `Success! Your phone number is registered.<br><br>
+          <a href="${data.link}" target="_blank"><b>Click here to join WhatsApp Group</b></a><br><br>
+          <i>Note: An admin will approve your request inside WhatsApp once verified.</i>`;
+      } else {
+        msgDiv.className = "msg error";
+        msgDiv.innerText = data.message;
+        btn.disabled = false;
+      }
+    } catch (e) {
+      msgDiv.style.display = 'block';
+      msgDiv.className = "msg error";
+      msgDiv.innerText = "Network error. Please try again.";
+      btn.disabled = false;
+    }
+  }
+</script>
+
+</body>
+</html>
