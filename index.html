@@ -103,60 +103,60 @@
     const btn = document.getElementById('submitBtn');
     if (!btn.disabled) btn.innerText = t.btnText;
   }
-
   async function requestAccess() {
-  const t = translations[currentLang];
-  const firstName = document.getElementById('firstName').value.trim();
-  const lastName = document.getElementById('lastName').value.trim();
-  const email = document.getElementById('email').value.trim();
+    const t = translations[currentLang];
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const email = document.getElementById('email').value.trim();
+    
+    const msgDiv = document.getElementById('statusMsg');
+    const btn = document.getElementById('submitBtn');
   
-  const msgDiv = document.getElementById('statusMsg');
-  const btn = document.getElementById('submitBtn');
-
-  if (!firstName || !lastName || !email) {
-    alert(t.fillAll);
-    return;
-  }
-
-  btn.disabled = true;
-  btn.innerText = t.btnLoading;
-  msgDiv.style.display = 'none';
-
-  try {
-    const payload = JSON.stringify({ 
-      firstName: firstName, 
-      lastName: lastName, 
-      email: email 
-    });
-
-    // Použijeme text/plain pre zamedzenie CORS preflightu
-    const res = await fetch(SCRIPT_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-      body: payload
-    });
-
-    const data = await res.json();
-
-    msgDiv.style.display = 'block';
-    if (data.success) {
-      msgDiv.className = "msg success";
-      msgDiv.innerHTML = data.message;
-    } else {
+    if (!firstName || !lastName || !email) {
+      alert(t.fillAll);
+      return;
+    }
+  
+    btn.disabled = true;
+    btn.innerText = t.btnLoading;
+    msgDiv.style.display = 'none';
+  
+    try {
+      const payload = JSON.stringify({ 
+        firstName: firstName, 
+        lastName: lastName, 
+        email: email 
+      });
+  
+      // Send via text/plain to bypass CORS preflight checks
+      const res = await fetch(SCRIPT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: payload
+      });
+  
+      const data = await res.json();
+  
+      msgDiv.style.display = 'block';
+      if (data.success) {
+        msgDiv.className = "msg success";
+        msgDiv.innerHTML = data.message;
+      } else {
+        msgDiv.className = "msg error";
+        msgDiv.innerText = data.message;
+        btn.disabled = false;
+        btn.innerText = t.btnText;
+      }
+    } catch (e) {
+      console.error("Detail chyby:", e);
+      msgDiv.style.display = 'block';
       msgDiv.className = "msg error";
-      msgDiv.innerText = data.message;
+      msgDiv.innerText = t.netError;
       btn.disabled = false;
       btn.innerText = t.btnText;
     }
-  } catch (e) {
-    console.error("Detail chyby:", e);
-    msgDiv.style.display = 'block';
-    msgDiv.className = "msg error";
-    msgDiv.innerText = t.netError;
-    btn.disabled = false;
-    btn.innerText = t.btnText;
   }
 }
 
