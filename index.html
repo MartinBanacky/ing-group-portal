@@ -55,7 +55,6 @@
 </div>
 
 <script>
-  // REPLACE WITH YOUR DEPLOYED APPS SCRIPT URL
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyJC2GUv-U_aCqnYoGn9P7OkJVf1HD4O9mW44oFieXej_qEji-OgjnVYdM8sjhCABnd/exec";
 
   let currentLang = 'sk';
@@ -126,6 +125,9 @@
     try {
       const res = await fetch(SCRIPT_URL, {
         method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8",
+        },
         body: JSON.stringify({ firstName: firstName, lastName: lastName, email: email })
       });
       const data = await res.json();
